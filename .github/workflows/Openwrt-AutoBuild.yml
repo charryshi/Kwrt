@@ -247,9 +247,9 @@ jobs:
         fi
         make defconfig
         fi
-        sed -i '/^CONFIG_TARGET_DEVICE_mediatek_filogic_DEVICE_.*=y$/d' .config
+        sed -i '/^CONFIG_TARGET_mediatek_filogic_DEVICE_.*=y$/d' .config
         sed -i '/^CONFIG_TARGET_PROFILE=/d' .config
-        echo 'CONFIG_TARGET_DEVICE_mediatek_filogic_DEVICE_cmcc_xr30=y' >> .config
+        echo 'CONFIG_TARGET_mediatek_filogic_DEVICE_cmcc_xr30=y' >> .config
         echo 'CONFIG_TARGET_PROFILE="DEVICE_cmcc_xr30"' >> .config
         yes "" | make olddefconfig || true
         cat .config
