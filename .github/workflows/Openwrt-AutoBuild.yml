@@ -146,30 +146,22 @@ jobs:
     - name: Clone source code
       run: |
         set -x
-        TAG_INFO="$(curl -gs -H 'Content-Type: application/json' \
-           -H "Authorization: Bearer ${{ secrets.TOKEN_KIDDIN9 }}" \
-           -X POST -d '{ "query": "query {repository(owner: \"openwrt\", name: \"openwrt\") {refs(refPrefix: \"refs/tags/\", first: 4, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {nodes {name target { ... on Tag {tagger {date}}}}}}}"}' https://api.github.com/graphql)"
-        TAG_DATE="$( echo ${TAG_INFO} | jq -r '.data.repository.refs.nodes[] | select(.name | startswith("v24")) | .target.tagger.date' | head -n 1)"
-        if [[ $(( ($(date +%s) - $(date -d "$TAG_DATE" +%s)) / 86400 )) -lt 15 ]]; then
-        REPO_BRANCH="$( echo ${TAG_INFO} | jq -r '.data.repository.refs.nodes[].name' | grep v24 | head -n 1)"
-        #REPO_BRANCH="openwrt-24.10"
-        else
         REPO_BRANCH="openwrt-24.10"
+        if [[ -n "${{ env.REPO_BRANCH }}" ]]; then
+            REPO_BRANCH="${{ env.REPO_BRANCH }}"
         fi
-        #echo "CONFIG_VERSION_REPO=\"https://dl.openwrt.ai/releases/`echo $REPO_BRANCH  | cut -d . -f 1,2 | sed -e 's/^v//'`\"">>devices/common/.config
-        echo "CONFIG_VERSION_REPO=\"https://dl.openwrt.ai/releases/24.10\"">>devices/common/.config
-        if [[ ! "${{ env.REPO_BRANCH }}" && "$REPO_URL" == "https://github.com/openwrt/openwrt" ]]; then
-            git clone $REPO_URL -b $REPO_BRANCH openwrt
-        elif [[ ! "${{ env.REPO_BRANCH }}" ]]; then
-            git clone $REPO_URL openwrt
+        echo "CONFIG_VERSION_REPO="https://dl.openwrt.ai/releases/24.10"" >> devices/common/.config
+        if [[ "$REPO_URL" == "https://github.com/openwrt/openwrt" ]]; then
+            git clone "$REPO_URL" -b "$REPO_BRANCH" openwrt
+        elif [[ -z "$REPO_BRANCH" ]]; then
+            git clone "$REPO_URL" openwrt
         else
-            REPO_BRANCH="${{env.REPO_BRANCH}}"
-            if [[ ${#REPO_BRANCH} -lt 10 ]]; then
-                git clone $REPO_URL -b ${REPO_BRANCH} openwrt
+            if [[ ${#REPO_BRANCH} -lt 40 ]]; then
+                git clone "$REPO_URL" -b "$REPO_BRANCH" openwrt
             else
-                git clone $REPO_URL openwrt
+                git clone "$REPO_URL" openwrt
                 cd openwrt
-                git checkout ${REPO_BRANCH}
+                git checkout "$REPO_BRANCH"
             fi
         fi
 
@@ -298,7 +290,7 @@ jobs:
         cd openwrt/bin/targets/*/*/
         cp $GITHUB_WORKSPACE/openwrt/.config ${{matrix.target}}.config || true
         cp $GITHUB_WORKSPACE/openwrt/build_dir/target-*/linux-*/linux-*/.config ${{matrix.target}}_kernel.config || true
-        rm -rf kwrt-!(*imagebuilder*)
+        rm -rf *imagebuilder*
         Emoji=("🎉" "🤞" "✨" "🎁" "🎈" "🎄" "🎨" "💋" "🍓" "🍕" "🍉" "💐" "🌴" "🚀" "🛸" "🗽" "⛅" "🌈" "🔥" "⛄" "🐶" "🏅" "🦄" "🐤")
         echo "EMOJI=${Emoji[$[$RANDOM % ${#Emoji[@]}]]}" >> $GITHUB_ENV
 
