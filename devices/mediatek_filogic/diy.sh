@@ -15,22 +15,6 @@ sed -i "s/-stock//g" package/boot/uboot-envtools/files/mediatek_filogic
 sed -i "s/openwrt-mediatek-filogic/kwrt-mediatek-filogic/g" target/linux/mediatek/image/filogic.mk
 sed -i "s/ fitblk / /g" target/linux/mediatek/image/filogic.mk
 
-# ===== 强制切换 firewall3 (iptables) =====
-
-# 禁用 fw4 / nftables
-sed -i 's/CONFIG_PACKAGE_firewall4=y/CONFIG_PACKAGE_firewall4=n/g' .config
-sed -i 's/CONFIG_PACKAGE_fw4=y/CONFIG_PACKAGE_fw4=n/g' .config
-sed -i 's/CONFIG_PACKAGE_nftables=y/CONFIG_PACKAGE_nftables=n/g' .config
-
-# 启用 firewall3 / iptables
-grep -q "CONFIG_PACKAGE_firewall3" .config || echo "CONFIG_PACKAGE_firewall3=y" >> .config
-grep -q "CONFIG_PACKAGE_iptables" .config || echo "CONFIG_PACKAGE_iptables=y" >> .config
-
-# 常用 netfilter 模块（避免运行时报依赖）
-for pkg in kmod-ipt-core kmod-ipt-nat kmod-ipt-conntrack kmod-nf-reject kmod-nf-ipt kmod-nf-log; do
-    grep -q "CONFIG_PACKAGE_$pkg" .config || echo "CONFIG_PACKAGE_$pkg=y" >> .config
-done
-
 
 # XR30 256M NAND layout (generated in diy.sh to avoid brittle patch hunks)
 python3 - <<'PY2'
