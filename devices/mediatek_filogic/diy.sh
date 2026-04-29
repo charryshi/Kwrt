@@ -16,6 +16,7 @@ sed -i "s/openwrt-mediatek-filogic/kwrt-mediatek-filogic/g" target/linux/mediate
 sed -i "s/ fitblk / /g" target/linux/mediatek/image/filogic.mk
 
 
+
 # XR30 256M NAND layout (generated in diy.sh to avoid brittle patch hunks)
 python3 - <<'PY2'
 from pathlib import Path
